@@ -13,7 +13,7 @@ from models import db, User, Character, Planet, FavoriteCharacter, FavoritePlane
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost/example'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -44,8 +44,18 @@ def get_characters():
     characters = Character.query.all()
     characters = list(map(lambda character: character.serialize(), characters))
     return jsonify(characters)
+
+@app.route("/characters/<int:id>", methods=['GET'])
+def get_single_character(id):
+    """
+    Single person
+    """
+    single_character = Character.query.get(id)
+    if not single_character: return jsonify({ "msg": "Character doesn't exist!"}), 404
+
+    return jsonify(single_character.serialize()), 200
    
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3000))
+    PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=False)
