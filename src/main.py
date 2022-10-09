@@ -30,14 +30,6 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "PRUEBA"
-    }
-
-    return jsonify(response_body), 200
 
 @app.route("/characters", methods=["GET"])
 def get_characters():
@@ -45,7 +37,7 @@ def get_characters():
     characters = list(map(lambda character: character.serialize(), characters))
     return jsonify(characters)
 
-@app.route("/characters/<int:id>", methods=['GET'])
+@app.route("/character/<int:id>", methods=['GET'])
 def get_single_character(id):
     """
     Single person
@@ -54,6 +46,43 @@ def get_single_character(id):
     if not single_character: return jsonify({ "msg": "Character doesn't exist!"}), 404
 
     return jsonify(single_character.serialize()), 200
+
+@app.route("/planets", methods=["GET"])
+def get_planets():
+    planets = Planet.query.all()
+    planets = list(map(lambda planet: planet.serialize(), planets))
+    return jsonify(planets)
+
+@app.route("/planet/<int:id>", methods=['GET'])
+def get_single_planet(id):
+    single_planet = Planet.query.get(id)
+    if not single_planet: return jsonify({ "msg": "Planet doesn't exist!"}), 404
+    return jsonify(single_planet)
+############ adicionales ###################
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users = list(map(lambda user: user.serialize(), users))
+    return jsonify(users)
+
+
+@app.route('/users/<int:id>/favorites', methods=['GET'])
+def get_users(id):
+    users = User.query.get(id)
+    users = list(map(lambda user: user.serialize(), users))
+    return jsonify(users)
+
+
+
+@app.route("/favorite/planet/<int:planets_id>", methods=['POST'])
+def store_fav_planet(planets_id):
+    users_id =  request.json.get('users_id')
+    favorite_planet = FavoritePlanet.query.get(planets_id)
+    favorite_planet.users_id = users_id
+    favorite_planet.save()
+
+    return jsonify(favorite_planet.serialize()), 200
    
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

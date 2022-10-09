@@ -9,6 +9,7 @@ class User(db.Model):
     last_name = db.Column(db.String(120), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
+    favoriteplanet = db.relationship('FavoritePlanet', backref='users')
    
     def serialize(self):
         return {
@@ -71,6 +72,7 @@ class Planet(db.Model):
     rotation_period = db.Column(db.Integer)
     orbital_period = db.Column(db.Integer)
     diameter = db.Column(db.Integer)
+    favorite = db.relationship('FavoritePlanet', backref='planets')
 
     def serialize(self):
         return {
