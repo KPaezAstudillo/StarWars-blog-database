@@ -39,12 +39,8 @@ def get_characters():
 
 @app.route("/character/<int:id>", methods=['GET'])
 def get_single_character(id):
-    """
-    Single person
-    """
     single_character = Character.query.get(id)
     if not single_character: return jsonify({ "msg": "Character doesn't exist!"}), 404
-
     return jsonify(single_character.serialize()), 200
 
 @app.route("/planets", methods=["GET"])
@@ -57,34 +53,38 @@ def get_planets():
 def get_single_planet(id):
     single_planet = Planet.query.get(id)
     if not single_planet: return jsonify({ "msg": "Planet doesn't exist!"}), 404
-    return jsonify(single_planet)
+    return jsonify(single_planet.serialize()), 200
+
 ############ adicionales ###################
 
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
     users = list(map(lambda user: user.serialize(), users))
-    return jsonify(users)
-
+    return jsonify(users), 200
 
 @app.route('/users/<int:id>/favorites', methods=['GET'])
-def get_users(id):
-    users = User.query.get(id)
-    users = list(map(lambda user: user.serialize(), users))
-    return jsonify(users)
+def get_single_user(id):
+    user = User.query.get(id)
+    favoritecharacters = user.serialize_characters()
+    favoriteplanets = user.serialize_characters()
+    if not user: return jsonify({ "msg": "User doesn't exist!"}), 404
+    return jsonify({
+        "favorite characters": favoritecharacters,
+        "favorite planets": favoriteplanets
+    }), 200
 
+@app.route("/favorites/planets/<int:planet_id>", methods=['POST'])
+def store_fav_planet(id):
+    new_favorite=FavoritePlanet()
+    new_favorite.planets_id = planet_id
+    new_favorite.users_id=request.json.get('')
+    new_favorite.save()
 
-
-@app.route("/favorite/planet/<int:planets_id>", methods=['POST'])
-def store_fav_planet(planets_id):
-    users_id =  request.json.get('users_id')
-    favorite_planet = FavoritePlanet.query.get(planets_id)
-    favorite_planet.users_id = users_id
-    favorite_planet.save()
-
-    return jsonify(favorite_planet.serialize()), 200
+    return jsonify({"msg": "Favorite planet added to user.id=1"}), 200
    
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
-    PORT = int(os.environ.get('PORT', 3001))
+    PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
+
